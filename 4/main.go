@@ -11,6 +11,7 @@ import (
 const hexChars = "0123456789abcdef"
 
 type Candidate struct {
+	encoded string
 	decoded string
 	freq    float64
 }
@@ -47,12 +48,14 @@ func main() {
 
 	candidates := []Candidate{}
 	for _, line := range in {
+		candidatesEncoded := []string{}
 		candidatesDecoded := []string{}
 		for i := 0; i <= 255; i++ {
 			str := hexStringXorChar(line, byte(i))
-			decodedStr, err := hexDecodeString(str)
-			if err == nil {
+			decodedStr, _ := hexDecodeString(str)
+			if decodedStr != "" {
 				candidatesDecoded = append(candidatesDecoded, decodedStr)
+				candidatesEncoded = append(candidatesEncoded, str)
 			}
 		}
 
@@ -61,16 +64,17 @@ func main() {
 			continue
 		}
 
+		// There are 75552 candidates
 		// Use letter frequencies in order to
 		// find the actual text among the noise.
-		for _, candidate := range candidatesDecoded {
+		for i, candidate := range candidatesDecoded {
 			frequencyDiff := getFrequencyDiff(candidate)
-			candidates = append(candidates, Candidate{candidate, frequencyDiff})
+			candidates = append(candidates, Candidate{candidatesEncoded[i], candidate, frequencyDiff})
 		}
-		fmt.Printf("line %s had %d candidates\n", line, len(candidatesDecoded))
 	}
 	fmt.Printf("found %d candidates in %d lines\n", len(candidates), len(in))
-	var bestCandidate Candidate = Candidate{
+	var bestCandidate = Candidate{
+		encoded: "",
 		decoded: "",
 		freq:    1000.0,
 	}
@@ -78,9 +82,10 @@ func main() {
 		if c.freq < bestCandidate.freq {
 			bestCandidate = c
 		}
-		fmt.Println(c.decoded, c.freq)
 	}
-	fmt.Printf("best candidate: %s (frequency err: %f)", bestCandidate.decoded, bestCandidate.freq)
+	fmt.Printf("best candidate: %s (frequency err: %f)\n", bestCandidate.decoded, bestCandidate.freq)
+	fmt.Printf("from the line: %s", bestCandidate.encoded)
+	// Prints: Now that the party is jumping
 }
 
 func getFrequencyDiff(s string) float64 {
@@ -199,6 +204,7 @@ func testHexStringXorChar() {
 /* String decoding stuff */
 func hexDecodeString(s string) (string, error) {
 	out := ""
+	var retErr error
 	for i := 1; i < len(s); i += 2 {
 		encodedChars := s[i-1 : i+1]
 
@@ -208,14 +214,14 @@ func hexDecodeString(s string) (string, error) {
 		// convert the 1-byte integer to a ascii char
 		decodedChar, err := byteToAscii(b)
 		if err != nil {
-			// we did not manage to convert it to ascii, which tells us that we've deciphered it wrong. send upwards.
-			return "", err
+			// we did not manage to convert the byte to ascii, ignore it but pass an error.
+			retErr = err
 		}
 
 		// append to out
 		out += decodedChar
 	}
-	return out, nil
+	return out, retErr
 }
 
 func stringToByte(s string) byte {
