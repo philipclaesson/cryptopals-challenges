@@ -3,18 +3,11 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"math"
 	"os"
-	"strings"
+	"sort"
 )
 
 const hexChars = "0123456789abcdef"
-
-type Candidate struct {
-	encoded string
-	decoded string
-	freq    float64
-}
 
 type CharFreq struct {
 	char rune
@@ -46,126 +39,17 @@ func main() {
 		os.Exit(1)
 	}
 
-	candidates := []Candidate{}
+	candidates := Candidates{}
 	for _, line := range in {
-		candidatesEncoded := []string{}
-		candidatesDecoded := []string{}
-		for i := 0; i <= 255; i++ {
-			str := hexStringXorChar(line, byte(i))
-			decodedStr, _ := hexDecodeString(str)
-			if decodedStr != "" {
-				candidatesDecoded = append(candidatesDecoded, decodedStr)
-				candidatesEncoded = append(candidatesEncoded, str)
-			}
-		}
-
-		if len(candidatesDecoded) == 0 {
-			// no candidates found for this line - go on with the next line
-			continue
-		}
-
-		// There are 75552 candidates
-		// Use letter frequencies in order to
-		// find the actual text among the noise.
-		for i, candidate := range candidatesDecoded {
-			frequencyDiff := getFrequencyDiff(candidate)
-			candidates = append(candidates, Candidate{candidatesEncoded[i], candidate, frequencyDiff})
-		}
+		candidates = append(candidates, breakSingleByteXOR(line))
 	}
 	fmt.Printf("found %d candidates in %d lines\n", len(candidates), len(in))
-	var bestCandidate = Candidate{
-		encoded: "",
-		decoded: "",
-		freq:    1000.0,
-	}
-	for _, c := range candidates {
-		if c.freq < bestCandidate.freq {
-			bestCandidate = c
-		}
-	}
-	fmt.Printf("best candidate: %s (frequency err: %f)\n", bestCandidate.decoded, bestCandidate.freq)
-	fmt.Printf("from the line: %s", bestCandidate.encoded)
-	// Prints: Now that the party is jumping
-}
-
-func getFrequencyDiff(s string) float64 {
-	// Letter frequencies according to https://www3.nd.edu/~busiforc/handouts/cryptography/letterfrequencies.html
-	var charFreqs = []CharFreq{
-		{'E', 0.0111607},
-		{'M', 0.030129},
-		{'A', 0.084966},
-		{'H', 0.030034},
-		{'R', 0.075809},
-		{'G', 0.024705},
-		{'I', 0.075448},
-		{'B', 0.020720},
-		{'O', 0.071635},
-		{'F', 0.018121},
-		{'T', 0.069509},
-		{'Y', 0.017779},
-		{'N', 0.066544},
-		{'W', 0.012899},
-		{'S', 0.057351},
-		{'K', 0.011016},
-		{'L', 0.054893},
-		{'V', 0.010074},
-		{'C', 0.045388},
-		{'X', 0.002902},
-		{'U', 0.036308},
-		{'Z', 0.002722},
-		{'D', 0.033844},
-		{'J', 0.001965},
-		{'P', 0.031671},
-		{'Q', 0.001962},
-		{'@', 0.0}, // me punishing strings for containing chars that are unlikely in actual text
-		{'/', 0.0},
-		{'\\', 0.0},
-		{':', 0.0},
-		{'}', 0.0},
-		{'{', 0.0},
-		{'(', 0.0},
-		{')', 0.0},
-		{'*', 0.0},
-		{'|', 0.0},
-		{']', 0.0},
-		{'[', 0.0},
-		{';', 0.0},
-		{':', 0.0},
-		{'-', 0.0},
-		{'\'', 0.0},
-		{'`', 0.0},
-		{'^', 0.0},
-		{'$', 0.0},
-		{'1', 0.0},
-		{'2', 0.0},
-		{'3', 0.0},
-		{'4', 0.0},
-		{'5', 0.0},
-		{'6', 0.0},
-		{'7', 0.0},
-		{'8', 0.0},
-		{'9', 0.0},
-		{'0', 0.0},
-		{'~', 0.0},
-		{'>', 0.0},
-		{'<', 0.0},
-		{' ', 0.2}, // a guess
-	}
-	errSum := 0.0
-	for _, charFreq := range charFreqs {
-		errSum += (math.Abs(getCharFrequency(s, charFreq.char) - charFreq.freq))
-	}
-	return errSum
-}
-
-func getCharFrequency(s string, c rune) float64 {
-	count := 0.0
-	for _, cAtPos := range strings.ToUpper(s) {
-		if c == cAtPos {
-			count++
-		}
-	}
-	return count / float64(len(s))
+	sort.Sort(candidates)
+	best := candidates[0]
+	fmt.Printf("best candidate: %s (frequency err: %f)\n", best.decoded, best.freq)
+	fmt.Printf("from the line: %s\n", best.encoded)
+	fmt.Printf("encrypted using key: 0x%02x\n", best.key)
+	// Prints: Now that the party is jumping, key = 0x35
 }
 
 /* xor */
