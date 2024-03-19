@@ -1,9 +1,14 @@
-package main
+package lib
 
 import (
 	"math"
 	"strings"
 )
+
+type CharFreq struct {
+	Char rune
+	Freq float64
+}
 
 func getFrequencyScore(s string) float64 {
 	// Letter frequencies according to https://www3.nd.edu/~busiforc/handouts/cryptography/letterfrequencies.html
@@ -70,7 +75,7 @@ func getFrequencyScore(s string) float64 {
 	}
 	errSum := 0.0
 	for _, charFreq := range charFreqs {
-		errSum += (math.Abs(getCharFrequency(s, charFreq.char) - charFreq.freq))
+		errSum += (math.Abs(getCharFrequency(s, charFreq.Char) - charFreq.Freq))
 	}
 	return errSum
 }
