@@ -1,16 +1,14 @@
-package main
+package lib
 
-const hexChars = "0123456789abcdef"
-
-func testHexCodec(payload string) {
-	encoded := hexEncode(payload)
-	decoded := hexDecode(encoded)
+func TestHexCodec(payload string) {
+	encoded := HexEncode(payload)
+	decoded := HexDecode(encoded)
 	if payload != decoded {
 		panic("hexcodec does not work")
 	}
 }
 
-func hexEncode(payload string) string {
+func HexEncode(payload string) string {
 	var out string
 	for i := 0; i < len(payload); i++ {
 		h1 := hexChars[payload[i]>>4]
@@ -21,7 +19,7 @@ func hexEncode(payload string) string {
 	return out
 }
 
-func hexDecode(s string) string {
+func HexDecode(s string) string {
 	var out string
 	for i := 1; i < len(s); i += 2 {
 		upper := indexOf(hexChars, rune(s[i-1]))

@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"os"
+
+	"github.com/philipclaesson/cryptopals-challenges/lib"
 )
 
 // https://cryptopals.com/sets/1/challenges/5
@@ -10,7 +12,7 @@ import (
 // you can use this to encrypt and encrypt whatever string payload
 // go run . encode/decode payload key
 func main() {
-	testHexCodec("asdfg")
+	lib.TestHexCodec("asdfg")
 	testEncrypt()
 	testEncryptDecrypt([]byte("asdfg"), []byte("ice"))
 	if len(os.Args) != 4 {
@@ -22,9 +24,9 @@ func main() {
 	payload := os.Args[2]
 	key := os.Args[3]
 	if mode == "encrypt" {
-		fmt.Println(hexEncode(string(encrypt([]byte((payload)), []byte(key)))))
+		fmt.Println(lib.HexEncode(string(encrypt([]byte((payload)), []byte(key)))))
 	} else if mode == "decrypt" {
-		fmt.Println(string(encrypt([]byte(hexDecode(payload)), []byte(key))))
+		fmt.Println(string(encrypt([]byte(lib.HexDecode(payload)), []byte(key))))
 	} else {
 		panic("what mode")
 	}
@@ -46,7 +48,7 @@ func testEncrypt() {
 	key := "ICE"
 	expected := "0b3637272a2b2e63622c2e69692a23693a2a3c6324202d623d63343c2a26226324272765272a282b2f20430a652e2c652a3124333a653e2b2027630c692b20283165286326302e27282f"
 	encrypted := encrypt([]byte(payload), []byte(key))
-	encryptedAsHex := hexEncode(string(encrypted))
+	encryptedAsHex := lib.HexEncode(string(encrypted))
 	if expected == encryptedAsHex {
 		// fmt.Printf("Encrypted correctly to %s\n", encryptedAsHex)
 	} else {
