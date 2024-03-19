@@ -4,7 +4,40 @@ import "fmt"
 
 const hexChars = "0123456789abcdef"
 
-/* xor */
+// XOR Encrypt/Decrypt an arbitrary payload with an arbitrary rotating key
+func XORRepeatingKey(payload []byte, key []byte) []byte {
+	out := payload
+	for i := 0; i < len(payload); i++ {
+		pb := payload[i]
+		kb := key[i%len(key)]
+		out[i] = pb ^ kb
+	}
+	return out
+}
+
+func TestXORRepeatingKey() {
+	payload := "Burning 'em, if you ain't quick and nimble\nI go crazy when I hear a cymbal"
+	key := "ICE"
+	expected := "0b3637272a2b2e63622c2e69692a23693a2a3c6324202d623d63343c2a26226324272765272a282b2f20430a652e2c652a3124333a653e2b2027630c692b20283165286326302e27282f"
+	encrypted := XORRepeatingKey([]byte(payload), []byte(key))
+	encryptedAsHex := HexEncode(string(encrypted))
+	if expected == encryptedAsHex {
+		// fmt.Printf("Encrypted correctly to %s\n", encryptedAsHex)
+	} else {
+		fmt.Printf("Expected: 	%s\n", expected)
+		fmt.Printf("Actual:		%s\n", encryptedAsHex)
+		panic("Encryption incorrect\n")
+	}
+}
+
+func TestXORRepeatingKeyEncryptDecrypt(payload []byte, key []byte) {
+	encrypted := XORRepeatingKey(payload, key)
+	decrypted := XORRepeatingKey(encrypted, key)
+	if string(decrypted) != string(payload) {
+		panic(fmt.Sprintf("encrypt decrypt not working as it should %s != %s", decrypted, payload))
+	}
+}
+
 // this function takes a hex encoded string and a char, performs bytewise xor and returns the hex encoded result
 func hexStringXorChar(s string, char byte) string {
 	for _, c := range s {
