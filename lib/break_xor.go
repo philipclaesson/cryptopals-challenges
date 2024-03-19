@@ -1,6 +1,8 @@
 package lib
 
-import "sort"
+import (
+	"sort"
+)
 
 type Candidate struct {
 	Encoded   string
@@ -42,18 +44,18 @@ func BreakSingleByteXOR(payload []byte) Candidate {
 	candidates := Candidates{}
 	for i := 0; i <= 255; i++ {
 		// str := hexStringXorChar(hexPayload, byte(i))
-		str := ""
-		for i, c := range payload {
-			str += string(c ^ byte(i))
+		decrypted := []byte{}
+		for _, c := range payload {
+			decrypted = append(decrypted, c^byte(i))
 		}
-		if str != "" {
-			candidates = append(candidates, Candidate{
-				str,
-				str,
-				getFrequencyScore(str),
-				byte(i),
-			})
-		}
+		str := string(decrypted)
+		candidates = append(candidates, Candidate{
+			"",
+			str,
+			getFrequencyScore(str),
+			byte(i),
+		})
+		// fmt.Println(i, getFrequencyScore(str), str[0], str[1], str[2], payload[0], payload[1], payload[2], payload[0]^byte(i), payload[1]^byte(i), payload[2]^byte(i))
 	}
 
 	sort.Sort(candidates)
