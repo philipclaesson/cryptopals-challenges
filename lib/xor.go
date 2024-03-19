@@ -7,6 +7,9 @@ const hexChars = "0123456789abcdef"
 /* xor */
 // this function takes a hex encoded string and a char, performs bytewise xor and returns the hex encoded result
 func hexStringXorChar(s string, char byte) string {
+	for _, c := range s {
+		indexOf(hexChars, c)
+	}
 	out := ""
 	for i := 1; i < len(s); i += 2 {
 		encodedChars := s[i-1 : i+1]
@@ -76,7 +79,7 @@ func hexCharToByte(s rune) byte {
 			return byte(i)
 		}
 	}
-	panic("bad rune")
+	panic(fmt.Sprintf("bad rune %v", s))
 }
 
 // Takes a byte, returns hex encoded (two character string)

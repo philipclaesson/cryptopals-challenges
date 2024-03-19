@@ -36,7 +36,7 @@ func main() {
 
 	candidates := lib.Candidates{}
 	for _, line := range in {
-		candidates = append(candidates, lib.BreakSingleByteXOR(line))
+		candidates = append(candidates, lib.BreakSingleByteXORHexEncoded(line))
 	}
 	fmt.Printf("found %d candidates in %d lines\n", len(candidates), len(in))
 	sort.Sort(candidates)
