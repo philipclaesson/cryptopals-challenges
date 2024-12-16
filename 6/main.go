@@ -1,9 +1,7 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
-	"os"
 
 	"github.com/philipclaesson/cryptopals-challenges/lib"
 )
@@ -17,7 +15,7 @@ func main() {
 	testHammingDistance()
 
 	// Read data from file
-	payload, err := readDataFile()
+	payload, err := lib.ReadDataFile("data.txt")
 	if err != nil {
 		fmt.Println("Error reading data file:", err)
 		return
@@ -44,21 +42,4 @@ func main() {
 	// let's try to decypt using the found key
 	decrypted := lib.XORRepeatingKey(rawPayload, key)
 	fmt.Println(string(decrypted)) // Prints Vanilla Ice lyrics as expected
-}
-
-func readDataFile() (string, error) {
-	file, err := os.Open("data.txt")
-	if err != nil {
-		fmt.Println("Error opening file:", err)
-		os.Exit(1)
-	}
-	defer file.Close()
-
-	payload := ""
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		line := scanner.Text()
-		payload += line
-	}
-	return payload, nil
 }
